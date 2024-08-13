@@ -22,7 +22,6 @@ import {
 } from '@components';
 import {
   closeModal,
-  fetchFeed,
   fetchIngredients,
   getUserThunk,
   init,
@@ -63,12 +62,6 @@ export const App = () => {
   useEffect(() => {
     if (!ingredients.length) {
       dispatch(fetchIngredients());
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!feed.length) {
-      dispatch(fetchFeed());
     }
   }, []);
 

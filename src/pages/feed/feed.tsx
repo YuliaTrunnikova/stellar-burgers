@@ -6,8 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../services/store';
 import {
   selectOrders,
   fetchFeed,
-  removeOrders,
-  fetchIngredients
+  removeOrders
 } from '../../slices/StellarBurgerSlice';
 
 export const Feed: FC = () => {
@@ -15,8 +14,8 @@ export const Feed: FC = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    Promise.all([dispatch(fetchIngredients()), dispatch(fetchFeed())]);
-  }, []);
+    dispatch(fetchFeed());
+  });
 
   if (!orders.length) {
     return <Preloader />;
