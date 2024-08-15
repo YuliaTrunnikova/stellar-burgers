@@ -1,30 +1,28 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
-import { useParams, redirect } from 'react-router-dom';
-import { useAppSelector } from '../../services/store';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAppSelector, useAppDispatch } from '../../services/store';
 import {
-  selectOrders,
-  selectIngredients
+  selectOrderModalData,
+  selectIngredients,
+  getOrderByNumber
 } from '../../slices/StellarBurgerSlice';
 
 export const OrderInfo: FC = () => {
-  const params = useParams<{ number: string }>();
-  if (!params.number) {
-    redirect('/feed');
-    return null;
-  }
-
-  const orders = useAppSelector(selectOrders);
-
-  const orderData = orders.find(
-    (item) => item.number === parseInt(params.number!)
-  );
-
+  const { number } = useParams<{ number: string }>();
+  const dispatch = useAppDispatch();
   const ingredients: TIngredient[] = useAppSelector(selectIngredients);
 
-  /* Готовим данные для отображения */
+  const orderData = useAppSelector(selectOrderModalData);
+
+  useEffect(() => {
+    if (!orderData && number) {
+      dispatch(getOrderByNumber(parseInt(number)));
+    }
+  }, [dispatch, orderData, number]);
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 

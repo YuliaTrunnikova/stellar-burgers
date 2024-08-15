@@ -9,7 +9,8 @@ import {
   logoutApi,
   orderBurgerApi,
   registerUserApi,
-  updateUserApi
+  updateUserApi,
+  getOrderByNumberApi
 } from '../utils/burger-api';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
@@ -35,7 +36,7 @@ type TInitialState = {
   isAuthenticated: boolean;
   isInit: boolean;
   isModalOpened: boolean;
-  errorText: string;
+  errorText: any;
 };
 
 export const initialState: TInitialState = {
@@ -263,6 +264,18 @@ const stellarBurgerSlice = createSlice({
           state.user.name = action.payload.user.name;
           state.user.email = action.payload.user.email;
         }
+      })
+      .addCase(getOrderByNumber.pending, (state) => {
+        state.orderRequest = true;
+        state.errorText = null;
+      })
+      .addCase(getOrderByNumber.rejected, (state, action) => {
+        state.orderRequest = false;
+        state.errorText = action.error.message;
+      })
+      .addCase(getOrderByNumber.fulfilled, (state, action) => {
+        state.orderRequest = false;
+        state.orderModalData = action.payload.orders[0];
       });
   }
 });
@@ -306,6 +319,11 @@ export const fetchLogout = createAsyncThunk('user/logout', async () =>
 export const fetchUpdateUser = createAsyncThunk(
   'user/update',
   async (user: Partial<TRegisterData>) => updateUserApi(user)
+);
+
+export const getOrderByNumber = createAsyncThunk(
+  'order/getOrder',
+  async (n: number) => getOrderByNumberApi(n)
 );
 
 export const {
