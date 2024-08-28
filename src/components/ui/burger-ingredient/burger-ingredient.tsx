@@ -9,10 +9,20 @@ import {
 } from '@zlden/react-developer-burger-ui-components';
 
 import { TBurgerIngredientUIProps } from './type';
+import { openModal } from '../../../slices/StellarBurgerSlice';
+import { useAppDispatch } from '../../../services/store';
+
+import { Location } from 'react-router-dom';
+import { TIngredient } from '@utils-types';
 
 export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
-  ({ ingredient, count, handleAdd, locationState }) => {
+  ({ ingredient, count, handleAdd, locationState, index }) => {
     const { image, price, name, _id } = ingredient;
+    const dispatch = useAppDispatch();
+
+    const onClick = () => {
+      dispatch(openModal());
+    };
 
     return (
       <li className={styles.container}>
@@ -20,6 +30,7 @@ export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
           className={styles.article}
           to={`/ingredients/${_id}`}
           state={locationState}
+          onClick={onClick}
         >
           {count && <Counter count={count} />}
           <img className={styles.img} src={image} alt='картинка ингредиента.' />
