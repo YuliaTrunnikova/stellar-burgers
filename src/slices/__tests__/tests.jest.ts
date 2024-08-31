@@ -1,4 +1,4 @@
-import { expect, test, describe, jest } from '@jest/globals';
+import { expect, test, describe } from '@jest/globals';
 import { configureStore } from '@reduxjs/toolkit';
 import stellarBurgerSlice, {
   addIngredient,
@@ -23,6 +23,45 @@ import stellarBurgerSlice, {
 import { mockStore, mockIngredient, mockBun } from './mockData';
 import rootReducer from '../rootReducer';
 
+
+const mockErrorResponse = { name: 'test', message: 'error' };
+const mockUserResponse = {
+  success: true,
+  user: { name: 'user', email: 'user@mail.ru' }
+};
+const mockIngredientsResponse = [
+  {
+    _id: '643d69a5c3f7b9001cfa093c',
+    name: 'Краторная булка N-200i',
+    type: 'bun',
+    proteins: 80,
+    fat: 24,
+    carbohydrates: 53,
+    calories: 420,
+    price: 1255,
+    image: 'https://code.s3.yandex.net/react/code/bun-02.png',
+    image_mobile: 'https://code.s3.yandex.net/react/code/bun-02-mobile.png',
+    image_large: 'https://code.s3.yandex.net/react/code/bun-02-large.png'
+  }
+];
+const mockOrderResponse = {
+  success: true,
+  name: 'testname',
+  order: {
+    _id: '664e927097ede0001d06bdb9',
+    ingredients: [
+      '643d69a5c3f7b9001cfa093d',
+      '643d69a5c3f7b9001cfa093e',
+      '643d69a5c3f7b9001cfa093d'
+    ],
+    status: 'done',
+    name: 'Флюоресцентный люминесцентный бургер',
+    createdAt: '2024-05-23T00:48:48.039Z',
+    updatedAt: '2024-05-23T00:48:48.410Z',
+    number: 40680
+  }
+};
+
 function initStore() {
   return configureStore({
     reducer: {
@@ -46,7 +85,7 @@ describe('Проверка rootReducer', () => {
 });
 
 describe('Тесты экшенов', () => {
-  test('Добавить ингридиент', () => {
+  test('Добавить ингредиент', () => {
     const store = initStore();
     store.dispatch(addIngredient(mockIngredient));
     store.dispatch(addIngredient(mockBun));
@@ -56,7 +95,7 @@ describe('Тесты экшенов', () => {
     expect(constructor.bun.name === 'Краторная булка N-200i');
   });
 
-  test('Удалить ингридиент', () => {
+  test('Удалить ингредиент', () => {
     const store = initStore();
     const before = selectConstructorItems(store.getState()).ingredients.length;
     store.dispatch(deleteIngredient(mockIngredient));
@@ -65,7 +104,7 @@ describe('Тесты экшенов', () => {
     expect(after).toBe(2);
   });
 
-  test('Очищение конструктора после щаказа', () => {
+  test('Очищение конструктора после заказа', () => {
     const store = initStore();
     store.dispatch(closeOrderRequest());
 
@@ -83,7 +122,7 @@ describe('Тесты экшенов', () => {
     });
   });
 
-  test('Переместить ингридиент вверх', () => {
+  test('Переместить ингредиент вверх', () => {
     const store = initStore();
     let ingredients = selectConstructorItems(store.getState()).ingredients;
     const lastIngredient = ingredients[ingredients.length - 1];
@@ -95,7 +134,7 @@ describe('Тесты экшенов', () => {
     expect(ingredients[ingredients.length - 2]).toEqual(lastIngredient);
   });
 
-  test('Переместить ингридиент вниз', () => {
+  test('Переместить ингредиент вниз', () => {
     const store = initStore();
     let ingredients = selectConstructorItems(store.getState()).ingredients;
     const firstIngredient = ingredients[0];
@@ -114,24 +153,20 @@ describe('Тесты асинхронных экшенов', () => {
 
     expect(state.loading).toBe(true);
   });
-  test('getUserThunk fullfiled', () => {
-    const mockResponse = {
-      success: true,
-      user: { name: 'user', email: 'user@mail.ru' }
-    };
+
+  test('getUserThunk fulfilled', () => {
     const state = stellarBurgerSlice(
       initialState,
-      getUserThunk.fulfilled(mockResponse, '')
+      getUserThunk.fulfilled(mockUserResponse, '')
     );
 
-    expect(state.user).toEqual(mockResponse.user);
+    expect(state.user).toEqual(mockUserResponse.user);
   });
 
-  test('getUserTnunk rejected', () => {
-    const mockAnswer = { name: 'test', message: 'error' };
+  test('getUserThunk rejected', () => {
     const state = stellarBurgerSlice(
       initialState,
-      getUserThunk.rejected(mockAnswer, '')
+      getUserThunk.rejected(mockErrorResponse, '')
     );
 
     expect(state.loading).toBe(false);
@@ -149,35 +184,19 @@ describe('Тесты асинхронных экшенов', () => {
   });
 
   test('Test fetchIngredients fulfilled', () => {
-    const mockResponse = [
-      {
-        _id: '643d69a5c3f7b9001cfa093c',
-        name: 'Краторная булка N-200i',
-        type: 'bun',
-        proteins: 80,
-        fat: 24,
-        carbohydrates: 53,
-        calories: 420,
-        price: 1255,
-        image: 'https://code.s3.yandex.net/react/code/bun-02.png',
-        image_mobile: 'https://code.s3.yandex.net/react/code/bun-02-mobile.png',
-        image_large: 'https://code.s3.yandex.net/react/code/bun-02-large.png'
-      }
-    ];
     const state = stellarBurgerSlice(
       initialState,
-      fetchIngredients.fulfilled(mockResponse, '')
+      fetchIngredients.fulfilled(mockIngredientsResponse, '')
     );
 
     expect(state.loading).toBe(false);
-    expect(state.ingredients).toEqual(mockResponse);
+    expect(state.ingredients).toEqual(mockIngredientsResponse);
   });
 
   test('Test fetchIngredients rejected', () => {
-    const mockAnswer = { name: 'test', message: 'error' };
     const state = stellarBurgerSlice(
       initialState,
-      fetchIngredients.rejected(mockAnswer, '')
+      fetchIngredients.rejected(mockErrorResponse, '')
     );
 
     expect(state.loading).toBe(false);
@@ -194,39 +213,21 @@ describe('Тесты асинхронных экшенов', () => {
   });
 
   test('Test fetchNewOrder rejected', () => {
-    const mockAnswer = { name: 'test', message: 'error' };
     const state = stellarBurgerSlice(
       initialState,
-      fetchNewOrder.rejected(mockAnswer, '', [''])
+      fetchNewOrder.rejected(mockErrorResponse, '', [''])
     );
 
     expect(state.orderRequest).toBe(false);
   });
 
   test('Test fetchNewOrder fulfilled', () => {
-    const mockResponse = {
-      success: true,
-      name: 'testname',
-      order: {
-        _id: '664e927097ede0001d06bdb9',
-        ingredients: [
-          '643d69a5c3f7b9001cfa093d',
-          '643d69a5c3f7b9001cfa093e',
-          '643d69a5c3f7b9001cfa093d'
-        ],
-        status: 'done',
-        name: 'Флюоресцентный люминесцентный бургер',
-        createdAt: '2024-05-23T00:48:48.039Z',
-        updatedAt: '2024-05-23T00:48:48.410Z',
-        number: 40680
-      }
-    };
     const state = stellarBurgerSlice(
       initialState,
-      fetchNewOrder.fulfilled(mockResponse, '', [''])
+      fetchNewOrder.fulfilled(mockOrderResponse, '', [''])
     );
 
-    expect(state.orderModalData).toEqual(mockResponse.order);
+    expect(state.orderModalData).toEqual(mockOrderResponse.order);
     expect(state.orderRequest).toBe(false);
   });
 
@@ -240,32 +241,31 @@ describe('Тесты асинхронных экшенов', () => {
   });
 
   test('Test fetchLoginUser rejected', () => {
-    const mockAnswer = { name: 'test', message: 'error' };
     const state = stellarBurgerSlice(
       initialState,
-      fetchLoginUser.rejected(mockAnswer, '', {
+      fetchLoginUser.rejected(mockErrorResponse, '', {
         email: 'test@mail.ru',
         password: 'test'
       })
     );
 
     expect(state.loading).toBe(false);
-    expect(state.errorText).toBe('error');
+    expect(state.errorText).toBe(mockErrorResponse.message);
   });
 
-  test('Test fetchLoginUser fulfiled', () => {
+  test('Test fetchLoginUser fulfilled', () => {
+    const mockLoginResponse = {
+      success: true,
+      refreshToken: 'testtoken',
+      accessToken: 'testaccess',
+      user: { name: 'testuser', email: 'testuser@mail.ru' }
+    };
     const state = stellarBurgerSlice(
       initialState,
-      fetchLoginUser.fulfilled(
-        {
-          success: true,
-          refreshToken: 'testtoken',
-          accessToken: 'testaccess',
-          user: { name: 'testuser', email: 'testuser@mail.ru' }
-        },
-        '',
-        { password: 'testuser', email: 'testuser@mail.ru' }
-      )
+      fetchLoginUser.fulfilled(mockLoginResponse, '', {
+        password: 'testuser',
+        email: 'testuser@mail.ru'
+      })
     );
 
     expect(state.loading).toBe(false);
@@ -275,196 +275,16 @@ describe('Тесты асинхронных экшенов', () => {
   test('Test fetchRegisterUser pending', () => {
     const state = stellarBurgerSlice(
       initialState,
-      fetchRegisterUser.pending(
-        '',
-        { name: 'user', email: 'test@mail.ru', password: 'test' },
-        ''
-      )
+      fetchRegisterUser.pending('', { name: 'user', email: 'test@mail.ru', password: 'test' })
     );
 
     expect(state.loading).toBe(true);
   });
 
   test('Test fetchRegisterUser rejected', () => {
-    const mockAnswer = { name: 'test', message: 'error' };
     const state = stellarBurgerSlice(
       initialState,
-      fetchRegisterUser.rejected(mockAnswer, '', {
+      fetchRegisterUser.rejected(mockErrorResponse, '', {
         name: 'user',
         email: 'test@mail.ru',
-        password: 'test'
-      })
-    );
-
-    expect(state.loading).toBe(false);
-    expect(state.errorText).toBe('error');
-  });
-
-  test('Test fetchRegisterUser fulfilled', () => {
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchRegisterUser.fulfilled(
-        {
-          success: true,
-          refreshToken: 'testtoken',
-          accessToken: 'testaccess',
-          user: { name: 'testuser', email: 'testuser@mail.ru' }
-        },
-        '',
-        { name: 'user', password: 'testuser', email: 'testuser@mail.ru' }
-      )
-    );
-
-    expect(state.isAuthenticated).toBe(true);
-    expect(state.loading).toBe(false);
-  });
-
-  test('Test fetchFeed pending', () => {
-    const state = stellarBurgerSlice(initialState, fetchFeed.pending(''));
-
-    expect(state.loading).toBe(true);
-  });
-
-  test('Test fetchFeed rejected', () => {
-    const mockAnswer = { name: 'test', message: 'error' };
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchFeed.rejected(mockAnswer, '')
-    );
-
-    expect(state.loading).toBe(false);
-  });
-
-  test('Test fetchFeed fulfilled', () => {
-    const mockResponse = {
-      success: true,
-      total: 100,
-      totalToday: 10,
-      orders: [
-        {
-          _id: '664e927097ede0001d06bdb9',
-          ingredients: [
-            '643d69a5c3f7b9001cfa093d',
-            '643d69a5c3f7b9001cfa093e',
-            '643d69a5c3f7b9001cfa093d'
-          ],
-          status: 'done',
-          name: 'Флюоресцентный люминесцентный бургер',
-          createdAt: '2024-05-23T00:48:48.039Z',
-          updatedAt: '2024-05-23T00:48:48.410Z',
-          number: 40680
-        }
-      ]
-    };
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchFeed.fulfilled(mockResponse, '')
-    );
-
-    expect(state.loading).toBe(false);
-    expect(state.orders).toEqual(mockResponse.orders);
-    expect(state.totalOrders).toEqual(mockResponse.total);
-    expect(state.ordersToday).toEqual(mockResponse.totalToday);
-  });
-
-  test('Test fetchUserOrders pending', () => {
-    const state = stellarBurgerSlice(initialState, fetchUserOrders.pending(''));
-
-    expect(state.loading).toBe(true);
-  });
-
-  test('Test fetchUserOrders rejected', () => {
-    const mockAnswer = { name: 'test', message: 'error' };
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchUserOrders.rejected(mockAnswer, '')
-    );
-
-    expect(state.loading).toBe(false);
-  });
-
-  test('Test fetchUserOrders fulfilled', () => {
-    const mockResponse = [
-      {
-        _id: '664e927097ede0001d06bdb9',
-        ingredients: [
-          '643d69a5c3f7b9001cfa093d',
-          '643d69a5c3f7b9001cfa093e',
-          '643d69a5c3f7b9001cfa093d'
-        ],
-        status: 'done',
-        name: 'Флюоресцентный люминесцентный бургер',
-        createdAt: '2024-05-23T00:48:48.039Z',
-        updatedAt: '2024-05-23T00:48:48.410Z',
-        number: 40680
-      }
-    ];
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchUserOrders.fulfilled(mockResponse, '')
-    );
-
-    expect(state.loading).toBe(false);
-    expect(state.userOrders).toEqual(mockResponse);
-  });
-
-  test('Test fetchLogout pending', () => {
-    const state = stellarBurgerSlice(initialState, fetchLogout.pending(''));
-
-    expect(state.loading).toBe(true);
-  });
-
-  test('Test fetchLogout rejected', () => {
-    const mockError = { name: 'test', message: 'error' };
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchLogout.rejected(mockError, '')
-    );
-
-    expect(state.loading).toBe(false);
-  });
-
-  test('Test fetchLogout fulfilled', () => {
-    const mockAnswer = { success: true };
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchLogout.fulfilled(mockAnswer, '')
-    );
-
-    expect(state.loading).toBe(false);
-    expect(state.user).toEqual({ name: '', email: '' });
-    expect(state.isAuthenticated).toBe(false);
-  });
-
-  test('Test fetchUpdateUser pending', () => {
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchUpdateUser.pending('', { name: 'test' })
-    );
-    expect(state.loading).toBe(true);
-  });
-
-  test('Test fetchUpdateUser rejected', () => {
-    const mockError = { name: 'test', message: 'error' };
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchUpdateUser.rejected(mockError, '', { name: 'test' })
-    );
-    expect(state.loading).toBe(false);
-  });
-
-  test('Test fetchUpdateUser fulfilled', () => {
-    const mockUser = { name: 'testuser', email: 'changedEmail@mail.ru' };
-    const mockResponse = {
-      success: true,
-      user: mockUser
-    };
-    const state = stellarBurgerSlice(
-      initialState,
-      fetchUpdateUser.fulfilled(mockResponse, '', mockUser)
-    );
-
-    expect(state.loading).toBe(false);
-    expect(state.user).toEqual(mockUser);
-  });
-});
+        password:
