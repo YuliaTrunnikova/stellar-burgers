@@ -1,0 +1,3 @@
+export const accessToken = "Bearer%20eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2YjhhZWY2MTE5ZDQ1MDAxYjRmZjJhMSIsImlhdCI6MTcyNTAyODE5NSwiZXhwIjoxNzI1MDI5Mzk1fQ.s3pZHRar0Q1jGsti1UuOpXDPb1QaNfxHFp-0bmjk2Lw"
+export const refreshToken = "82ae0a1a5f351576c2b583c7baaf462f9369966f30c1c10de902f8d9a85e797be110e021a5060945"
+
